@@ -1,0 +1,25 @@
+{
+  "name": "express-api",
+  "version": "1.0.0",
+  "description": "Express REST API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chilero2/emilio_API_utils.git"
+  },
+  "author": "Emilio Blasco",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/chilero2/emilio_API_utils/issues"
+  },
+  "homepage": "https://github.com/chilero2/emilio_API_utils#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "md5": "^2.3.0",
+    "sqlite3": "^5.1.2"
+  }
+}
