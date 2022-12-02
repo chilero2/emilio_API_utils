@@ -1,5 +1,5 @@
 var sqlite3 = require('sqlite3').verbose()
-var md5 = require('md5')
+var crypto = require('crypto-js')
 
 const DBSOURCE = 'db.sqlite'
 
@@ -24,8 +24,30 @@ let db = new sqlite3.Database(DBSOURCE, err => {
         } else {
           // Table just created, creating some rows
           var insert = 'INSERT INTO user (name, email, password) VALUES (?,?,?)'
-          db.run(insert, ['admin', 'admin@example.com', md5('admin123456')])
-          db.run(insert, ['user', 'user@example.com', md5('user123456')])
+          db.run(insert, [
+            'admin',
+            'admin@example.com',
+            crypto.SHA512('admin123456').toString(),
+          ])
+          db.run(insert, [
+            'user',
+            'user@example.com',
+            crypto.SHA512('user123456').toString(),
+          ])
+        }
+      }
+    )
+    db.run(
+      `CREATE TABLE messages (
+            iduser INTEGER,
+            date TEXT, 
+            message TEXT, 
+            CONSTRAINT user_date_pk PRIMARY KEY (iduser, date),
+            CONSTRAINT user_fk FOREIGN KEY (iduser) REFERENCES user(id)
+            )`,
+      err => {
+        if (err) {
+          // Table already created
         }
       }
     )
