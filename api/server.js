@@ -2,13 +2,15 @@
 var express = require('express')
 var app = express()
 var db = require('./database.js')
-var md5 = require('md5')
 var crypto = require('crypto-js')
 var fs = require('fs')
 var https = require('https')
-
+const cors = require('cors') //Para aceptar consultas de otros
 var bodyParser = require('body-parser')
-app.use(bodyParser.urlencoded({ extended: false }))
+const {config} = require('./config.js') //Archivo de configuración del servidor
+
+app.use(cors(config.application.cors.server))
+app.use(bodyParser.urlencoded({extended: false}))
 app.use(bodyParser.json())
 
 //SERVIDOR HTTPS
@@ -37,7 +39,7 @@ app.get('/api/users', (req, res, next) => {
   var params = []
   db.all(sql, params, (err, rows) => {
     if (err) {
-      res.status(400).json({ error: err.message })
+      res.status(400).json({error: err.message})
       return
     }
     res.json({
@@ -52,7 +54,7 @@ app.get('/api/user/:id', (req, res, next) => {
   var params = [req.params.id]
   db.get(sql, params, (err, row) => {
     if (err) {
-      res.status(400).json({ error: err.message })
+      res.status(400).json({error: err.message})
       return
     }
     res.json({
@@ -71,7 +73,7 @@ app.post('/api/user/', (req, res, next) => {
     errors.push('No email specified')
   }
   if (errors.length) {
-    res.status(400).json({ error: errors.join(',') })
+    res.status(400).json({error: errors.join(',')})
     return
   }
   var data = {
@@ -83,7 +85,7 @@ app.post('/api/user/', (req, res, next) => {
   var params = [data.name, data.email, data.password]
   db.run(sql, params, function (err, result) {
     if (err) {
-      res.status(400).json({ error: err.message })
+      res.status(400).json({error: err.message})
       return
     }
     res.json({
@@ -109,7 +111,7 @@ app.patch('/api/user/:id', (req, res, next) => {
     [data.name, data.email, data.password, req.params.id],
     function (err, result) {
       if (err) {
-        res.status(400).json({ error: res.message })
+        res.status(400).json({error: res.message})
         return
       }
       res.json({
@@ -127,10 +129,10 @@ app.delete('/api/user/:id', (req, res, next) => {
     req.params.id,
     function (err, result) {
       if (err) {
-        res.status(400).json({ error: res.message })
+        res.status(400).json({error: res.message})
         return
       }
-      res.json({ message: 'deleted', changes: this.changes })
+      res.json({message: 'deleted', changes: this.changes})
     }
   )
 })
@@ -140,35 +142,35 @@ app.post('/api/login', (req, res, next) => {
   const pass = crypto.SHA512(req.body.password).toString()
   var sql = 'SELECT * FROM user WHERE email = ? AND password = ?'
   db.get(sql, [mail, pass], (err, user) => {
-    if (err) res.status(400).json({ error: res.message })
+    if (err) res.status(400).json({error: res.message})
     else {
       if (user) {
-        res.json({ mensaje: 'success' })
+        res.json({mensaje: 'success'})
       } else {
-        res.json({ mensaje: 'Constraseñas incorrecta' })
+        res.json({mensaje: 'Constraseñas incorrecta'})
       }
     }
   })
 })
 
-app.post('/api/comments', (req, res) => {
+app.post('/api/comments/', (req, res) => {
   var errors = []
   if (!req.body.message) {
     errors.push('No message specified')
   }
   if (errors.length) {
-    return res.status(400).json({ error: errors.join(',') })
+    return res.status(400).json({error: errors.join(',')})
   }
   var data = {
     message: req.body.message,
     id: req.body.iduser,
-    date: new Date().toLocaleDateString('en-GB'),
+    date: new Date().toLocaleString(),
   }
   var sql = 'INSERT INTO messages (iduser, date, message) VALUES (?,?,?)'
   var params = [data.id, data.date, data.message]
   db.run(sql, params, function (err, result) {
     if (err) {
-      res.status(400).json({ error: err.message })
+      res.status(400).json({error: err.message})
       return
     }
     res.json({
@@ -182,16 +184,12 @@ app.get('/api/comments/:id', (req, res) => {
   var params = req.params.id
   db.all(sql, params, (err, rows) => {
     if (err) {
-      res.status(400).json({ error: err.message })
+      res.status(400).json({error: err.message})
       return
     }
-    console.log(params)
-    console.log(rows)
     res.json({
       message: 'success',
       data: rows,
     })
   })
 })
-
-
